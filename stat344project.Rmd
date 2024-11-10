@@ -1,0 +1,32 @@
+---
+title: "stat344project"
+output: html_document
+date: "2024-11-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+```{r cars}
+# Data cleaning and data preparation
+full_data <- read.csv("cleaned_full_data.csv", header = T)
+data <- full_data[,c("X", "restaurant", "star", "num_reviews", "city")] %>%
+  rename(id = X)%>% 
+  drop_na()
+
+dim(data)
+summary(data)
+```
+
+
+
+```{r pressure, echo=FALSE}
+# Population mean of star
+p_mean_star <- mean(data$star)
+p_mean_star
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
