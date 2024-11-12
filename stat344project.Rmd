@@ -1,6 +1,6 @@
 ---
 title: "stat344project"
-output: html_document
+output: pdf_document
 date: "2024-11-10"
 ---
 
@@ -21,6 +21,68 @@ dim(data)
 summary(data)
 ```
 
+```{r}
+# 1. Distribution Plot (Histogram) for Ratings by City
+ggplot(data, aes(x = star, fill = city)) +
+  geom_histogram(binwidth = 0.1, color = "black", alpha = 0.7) +
+  facet_wrap(~ city) +
+  labs(title = "Histogram of Ratings by City",
+       x = "Rating",
+       y = "Count") +
+  theme_minimal()
+
+# 2. Boxplot for Ratings by City
+ggplot(data, aes(x = city, y = star, fill = city)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Ratings by City",
+       x = "City",
+       y = "Rating") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+```{r}
+
+data <- data %>%
+  mutate(rating_above_4_5 = ifelse(star > 4.5, 1, 0))
+
+
+city_proportion <- data %>%
+  group_by(city) %>%
+  summarise(proportion_above_4_5 = mean(rating_above_4_5))
+
+ggplot(city_proportion, aes(x = city, y = proportion_above_4_5, fill = city)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Proportion of Ratings Above 4.5 by City",
+       x = "City",
+       y = "Proportion") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+```{r}
+data <- data %>%
+  mutate(rating_category = cut(star, breaks = c(0, 3.5, 4, 4.5, 5),
+                               labels = c("3-3.5", "3.5-4", "4-4.5", "4.5-5")))
+
+city_rating_proportion <- data %>%
+  group_by(city, rating_category) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(city) %>%
+  mutate(proportion = count / sum(count))
+
+ggplot(city_rating_proportion, aes(x = city, y = proportion, fill = rating_category)) +
+  geom_bar(stat = "identity", position = "fill") +
+  labs(title = "Proportion of Rating Categories by City",
+       x = "City",
+       y = "Proportion") +
+  theme_minimal()
+
+
+```
+
 
 
 ```{r pressure, echo=TRUE}
@@ -29,7 +91,7 @@ p_mean_star <- mean(data$star)
 p_mean_star
 ```
 
-
+## SRS for mean
 ```{r}
 IDS <- data$id
 N <- length(data$id)
@@ -58,9 +120,11 @@ srs_CI <- c(srs_sample.mean - 1.96*srs_sample.se, srs_sample.mean + 1.96*srs_sam
 srs_CI
 ```
 
+## SRS for the p
+
 ```{r}
-# Sample proportion of the restuarant that larger than 4.5 
-srs_sample_p <- mean(data_srs_sample$star >= 4.5)
+# Sample proportion of the restaurant that larger than 4.5 
+srs_sample_p <- mean(data_srs_sample$star > 4.5)
 srs_sample_p
 # Sample variance of the sample proportion
 srs_sample.variace_p <- srs_sample_p *(1- srs_sample_p)/nrow(data_srs_sample)
@@ -75,6 +139,7 @@ srs_CI_p
 
 ```
 
+## Proportional Allocation for mean
 ```{r}
 # Stratified Sampling Proportional Allocation
 # Calculate n.h
@@ -109,20 +174,82 @@ str_se.h <- sqrt((1-n.h/N.h)*str_variance.h/n.h)
 str_prop.mean <- sum(N.h/N * str_mean.h)
 str_prop.mean
 
-str_prop.se <- sqrt(sum((N.h/N)^2 * str_se.h^2))
-str_prop.se
+str_prop.mean_se <- sqrt(sum((N.h/N)^2 * str_se.h^2))
+str_prop.mean_se
 ```
 
-
+## Proportional allocarion for p
 ```{r}
+# Proportion:
+# Adding a binary indicator for ratings > 4.5 stars
+data <- data %>%
+  mutate(rating_above_4_5 = ifelse(star > 4.5, 1, 0))
 
-# Compare SRS and STR prop
-srs <- c(srs_sample.mean, srs_sample.se)
-str_prop <- c(str_prop.mean, str_prop.se)
+# Stratified Sampling Proportional Allocation
+N.h <- tapply(data$rating_above_4_5, data$city, length)
+city_allocation <- round((N.h / N) * n)
+
+n.h <- c(13, 41, 27, 55, 22, 80, 76, 22) # Adjust based on city_allocation
+cities <- names(N.h)
+
+set.seed(0)
+data_str_sample <- NULL
+for (i in 1:length(cities)) {
+  row.indices <- which(data$city == cities[i])
+  sample.indices <- sample(row.indices, n.h[i], replace = FALSE)
+  data_str_sample <- rbind(data_str_sample, data[sample.indices, ])
+}
+
+# Stratified Estimation for Proportion
+str_prop.h <- tapply(data_str_sample$rating_above_4_5, data_str_sample$city, mean)
+str_variance.h <- tapply(data_str_sample$rating_above_4_5, data_str_sample$city, var)
+str_se.h <- sqrt((1 - n.h / N.h) * str_variance.h / n.h)
+
+str_prop.p <- sum(N.h / N * str_prop.h)
+str_prop.p
+
+str_prop.p_se <- sqrt(sum((N.h / N)^2 * str_se.h^2))
+str_prop.p_se
+
+# Compare SRS and stratified estimates for the proportion
+srs <- c(srs_sample_p, srs_sample.se)
+str_prop <- c(str_prop.mean, str_prop.p_se)
 rbind(srs, str_prop)
 ```
 
 
 ```{r}
+estimate_data <- data.frame(
+  method = c("SRS", "Stratified"),
+  mean_estimate = c(srs_sample.mean, str_prop.mean),
+  mean_se = c(srs_sample.se, str_prop.mean_se),
+  proportion_estimate = c(srs_sample_p, str_prop.p),
+  proportion_se = c(srs_sample.se_p, str_prop.p_se)
+)
+estimate_data
+
+true_mean <- p_mean_star
+true_proportion <- mean(data$star > 4.5) 
+
+
+ggplot(estimate_data, aes(x = method, y = mean_estimate)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean_estimate - 1.96 * mean_se, ymax = mean_estimate + 1.96 * mean_se), width = 0.2) +
+  geom_hline(yintercept = true_mean, color = "red", linetype = "dashed") +
+  labs(title = "Mean Estimate with 95% Confidence Intervals",
+       x = "Sampling Method",
+       y = "Mean Estimate") +
+  theme_minimal()
+
+ggplot(estimate_data, aes(x = method, y = proportion_estimate)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = proportion_estimate - 1.96 * proportion_se, ymax = proportion_estimate + 1.96 * proportion_se), width = 0.2) +
+  geom_hline(yintercept = true_proportion, color = "red", linetype = "dashed") +  
+  labs(title = "Proportion Estimate with 95% Confidence Intervals",
+       x = "Sampling Method",
+       y = "Proportion Estimate") +
+  theme_minimal()
+
 
 ```
+
