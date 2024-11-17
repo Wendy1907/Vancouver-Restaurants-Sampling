@@ -1,6 +1,6 @@
 ---
 title: "Analysis of DoorDash Restaurant Ratings in Canada"
-author: "Bryan, Junbo, Wendy, Jag"
+author: "Bryan Seo, Junbo Rao, Wendy Phung, Jag Tang"
 date: "November 2024"
 output: pdf_document
 ---
@@ -94,7 +94,6 @@ p <- 0.5 # Worst-case variance
 e <- 0.05 # Margin of error
 
 n <- round((z^2 * p * (1 - p)) / e^2)
-n
 fpc <- n/(1+n/N)
 sample_size <- round(fpc)
 sample_size
@@ -171,6 +170,7 @@ cat("Sample Standard Deviation of the Proportion:", srs_sample.sd_p, "\n")
 # 95% Confidence Interval for the sample proportion
 srs_sample.se_p <- sqrt(1 - (n / N)) * srs_sample.sd_p
 srs_CI_p <- c(srs_sample_p - 1.96 * srs_sample.se_p, srs_sample_p + 1.96 * srs_sample.se_p)
+cat("Sample Standard Error of the Proportion:", srs_sample.se_p, "\n")
 cat("95% Confidence Interval for the Proportion:", srs_CI_p, "\n")
 ```
 
@@ -178,11 +178,11 @@ cat("95% Confidence Interval for the Proportion:", srs_CI_p, "\n")
 
 ### SRS Mean Analysis
 
-Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.472, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0147. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
+Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.47, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0147. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
 
 ### SRS Proportion Analysis
 
-For the proportion of restaurants with ratings greater than 4.5, the SRS method yielded a sample proportion of 48.2%. The 95% confidence interval for this proportion is between 43.1% and 53.2%, indicating that nearly half of the restaurants have ratings above 4.5. This estimate provides a reasonable understanding of the proportion of highly rated restaurants on DoorDash in Canada.
+For the proportion of restaurants with ratings greater than 4.5, the SRS method yielded a sample proportion of 48.36%, and sample standard error is 0.0255. The 95% confidence interval for this proportion is between 43.36% and 53.36%, indicating that nearly half of the restaurants have ratings above 4.5. This estimate provides a reasonable understanding of the proportion of highly rated restaurants on DoorDash in Canada.
 
 ------------------------------------------------------------------------
 
@@ -270,11 +270,11 @@ cat("Stratified Proportion SE:", str_prop.p_se, "\n")
 
 ### Stratified Mean Analysis
 
-Using stratified sampling with proportional allocation based on cities, we estimated the mean restaurant rating to be 4.4495. The standard error of this estimate was 0.0150. This standard error is comparable to that obtained from the SRS method, indicating similar precision. The stratified mean estimate is slightly lower than the SRS estimate, which may reflect differences in ratings across cities accounted for by the stratification.
+Using stratified sampling with proportional allocation based on cities, we estimated the mean restaurant rating to be 4.458. The standard error of this estimate was 0.0149. This standard error is comparable to that obtained from the SRS method, indicating similar precision. The stratified mean estimate is slightly lower than the SRS estimate, which may reflect differences in ratings across cities accounted for by the stratification.
 
 ### Stratified Proportion Analysis
 
-The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is larger than the standard error from the SRS method. This suggests that, in this case, stratified sampling provided a less precise estimate for the proportion compared to SRS.
+The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is smaller than the standard error from the SRS method. *This suggests that, in this case, stratified sampling provided a less precise estimate for the proportion compared to SRS.*
 
 # Conclusion and Discussion
 
@@ -330,8 +330,6 @@ ggplot(city_proportion, aes(x = city, y = proportion_above_4_5, fill = city)) +
   theme(legend.position = "none")
 
 ```
-
-
 
 ### References
 
