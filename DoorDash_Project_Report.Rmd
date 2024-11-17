@@ -1,0 +1,339 @@
+---
+title: "Analysis of DoorDash Restaurant Ratings in Canada"
+author: "Bryan, Junbo, Wendy, Jag"
+date: "November 2024"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+# Cover Page
+
+**Title:** Analysis of DoorDash Restaurant Ratings in Canada\
+**Contributors:**\
+Wendy Phung – 76185974 (Leader)\
+Junbo (David) Rao - 55832919\
+Jag Tang - 89478895\
+Bryan Seo - 13749536\
+**Date:** November 2024
+
+------------------------------------------------------------------------
+
+# Distribution of Work
+
+| Task                                                  | Contributor |
+|-------------------------------------------------------|-------------|
+| Choose sample size for SRS and Stratified Sampling    | Bryan       |
+| Data Cleaning and Exploration                         | Junbo/Wendy |
+| Project Overview and Cover Page                       | Jag         |
+| R Code Implementation for SRS and Stratified Sampling | Wendy       |
+| Analyze Results for SRS and Stratified Sampling       | Bryan/Jag   |
+| Proportion Code and Analysis                          | Jag         |
+| Appendix and References                               | Group       |
+
+------------------------------------------------------------------------
+
+# Project Overview
+
+Food delivery apps such as UberEats and DoorDash are used extensively throughout Canada, mostly by students and working adults. Food delivery is a great convenience, it saves people time and effort either from cooking or going to get takeout but it comes with drawbacks. Firstly, it is difficult to accurately judge the quality of a restaurant on the app with just photos, so many people usually can only refer to the rating of the restaurant which ranges from 0 to 5.0 stars. Secondly, food delivery is generally quite expensive, and the quality is diminished when compared to eating it at restaurants. The population of interest for this study is the restaurants across Canada
+
+This project aims to determine the quality of food from DoorDash restaurants across Canada. In order to do this, we will perform a simple random sample (SRS) and a stratified sample using proportional allocation on a dataset of DoorDash restaurants in Canada to estimate the mean rating of restaurants in Canada on DoorDash, and for our secondary parameter, we have defined it as the proportion of restaurants with a rating greater than 4.5. We hope to accurately estimate the mean rating of restaurants on DoorDash in Canada and the proportion of restaurants with a rating above 4.5 to use as a proxy for the quality of food.
+
+# Population Overview
+
+-   **Target Population:** All DoorDash-listed restaurants across Canada. N = 2160
+-   **Stratification:** The population is stratified by cities based on third-party Google Maps data.
+-   **Source of Data:** Kaggle
+
+```{r}
+# Data cleaning and data preparation
+# Ensure dataset is in current Working Directory using "getwd()"
+full_data <- read.csv("cleaned_full_data.csv", header = T)
+data <- full_data[,c("X", "restaurant", "star", "num_reviews", "city")] %>%
+  rename(id = X)%>% 
+  drop_na()
+
+dim(data)
+summary(data)
+```
+
+For additional analysis of population, please see appendix A.
+
+------------------------------------------------------------------------
+
+# Parameter of Interest Overview
+
+-   **Continuous Parameter:** Average restaurant ratings across major cities in Canada
+-   **Binary Parameter:** Proportion of restaurants with ratings higher than 4.5
+
+------------------------------------------------------------------------
+
+# Method Overview
+
+-   **Method 1:** Simple Random Sampling
+-   **Method 2:** Stratified Sampling
+
+# Choosing Sample Size
+
+First, we will use the binary form (ie. higher than 4.5, lower than 4.5) of our continuous dataset to estimate our sample size. This is because the binary form allows us to attain a conservative estimate (ie. assume maximum variance of 0.25). Intuitively, we know that binary data typically requires larger samples than continuous data to achieve the same precision as it loses information through discretization. Therefore, the sample size calculated from the binary dataset will be sufficient for the continuous case as well.
+
+In order to determine the appropriate sample size, we chose a 95% CI half-width length of 0.05, and assumed the worst-case variance for the binary data (0.25). We also assumed that the sampling distribution will approximate to a normal distribution. Given the guessed variance, intended % for the CI, and the half-width, we were able to calculate the minimum sample size required n=326
+
+------------------------------------------------------------------------
+
+### Sample Size Calculation for Binary/Continuous Case with FPC
+
+```{r}
+N <- 2620 # Total population
+z <- 1.96 # z-score for 95% CI
+p <- 0.5 # Worst-case variance
+e <- 0.05 # Margin of error
+
+n <- round((z^2 * p * (1 - p)) / e^2)
+n
+fpc <- n/(1+n/N)
+sample_size <- round(fpc)
+sample_size
+```
+
+### Sample Size Calculation for Stratified Case
+
+Relying on third-party information based on Google Maps data, we will stratify the data into cities, and perform a proportional allocation based on the number of restaurants in each city.
+
+```{r}
+# Stratified Sampling Proportional Allocation
+# Calculate n.h
+N.h <- tapply(data$star, data$city, length)
+cat("Population Strata Sizes:", N.h, "\n")
+city_allocation <- round((N.h/N)*sample_size)
+city_allocation
+```
+
+# First Method: Simple Random Sampling
+
+```{r pressure, echo=TRUE}
+# Population mean of star
+p_mean_star <- mean(data$star)
+cat("Population Mean:", p_mean_star, "\n")
+```
+
+## SRS for Mean
+
+```{r}
+IDS <- data$id
+N <- length(data$id)
+n <- sample_size
+
+# Simple Random Sampling
+srs_sample <- sample.int(N, n, replace = FALSE)
+srs_sample.IDS <- IDS[srs_sample]
+data_srs_sample <- subset(data, id %in% srs_sample.IDS)
+
+# Sample Mean
+srs_sample.mean <- mean(data_srs_sample$star)
+cat("Sample Mean:", srs_sample.mean, "\n")
+
+# Sample Variance for Sample Mean
+srs_sample.variance <- sum((data_srs_sample$star - srs_sample.mean)^2) / (length(data_srs_sample$star) - 1)
+cat("Sample Variance:", srs_sample.variance, "\n")
+
+# Sample SD for Sample Mean
+srs_sample.sd <- sqrt(srs_sample.variance)
+cat("Sample Standard Deviation:", srs_sample.sd, "\n")
+
+# Calculate 95% CI for population mean
+srs_sample.se <- sqrt((1 - n / N) / n) * srs_sample.sd
+cat("Sample SE:", srs_sample.se, "\n")
+
+srs_CI <- c(srs_sample.mean - 1.96 * srs_sample.se, srs_sample.mean + 1.96 * srs_sample.se)
+cat("95% Confidence Interval:", srs_CI, "\n")
+```
+
+## SRS for Proportion
+
+```{r}
+# Sample proportion of restaurants with ratings greater than 4.5
+srs_sample_p <- mean(data_srs_sample$star > 4.5)
+cat("Sample Proportion of Restaurants with Ratings > 4.5:", srs_sample_p, "\n")
+
+# Sample variance of the sample proportion
+srs_sample.variance_p <- srs_sample_p * (1 - srs_sample_p) / nrow(data_srs_sample)
+cat("Sample Variance of the Proportion:", srs_sample.variance_p, "\n")
+
+# Sample SD of the sample proportion
+srs_sample.sd_p <- sqrt(srs_sample.variance_p)
+cat("Sample Standard Deviation of the Proportion:", srs_sample.sd_p, "\n")
+
+# 95% Confidence Interval for the sample proportion
+srs_sample.se_p <- sqrt(1 - (n / N)) * srs_sample.sd_p
+srs_CI_p <- c(srs_sample_p - 1.96 * srs_sample.se_p, srs_sample_p + 1.96 * srs_sample.se_p)
+cat("95% Confidence Interval for the Proportion:", srs_CI_p, "\n")
+```
+
+## SRS Analysis
+
+### SRS Mean Analysis
+
+Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.472, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0147. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
+
+### SRS Proportion Analysis
+
+For the proportion of restaurants with ratings greater than 4.5, the SRS method yielded a sample proportion of 48.2%. The 95% confidence interval for this proportion is between 43.1% and 53.2%, indicating that nearly half of the restaurants have ratings above 4.5. This estimate provides a reasonable understanding of the proportion of highly rated restaurants on DoorDash in Canada.
+
+------------------------------------------------------------------------
+
+# Method 2: Stratified Sampling
+
+## Stratified for Mean
+
+```{r}
+n.h <- city_allocation
+
+cities <- names(N.h)
+
+set.seed(0)
+data_str_sample <- NULL
+for (i in 1: length(cities))
+{
+  row.indices <- which(data$city == cities[i])
+  sample.indices <- sample(row.indices, n.h[i], replace = F)
+  data_str_sample <- rbind(data_str_sample, data[sample.indices, ])
+}
+
+# Stratified Estimation
+
+# Mean rating per city
+str_mean.h <- tapply(data_str_sample$star, data_str_sample$city, mean)
+cat("Stratified Mean Ratings by City:\n")
+print(str_mean.h)
+
+# Variance of ratings per city
+str_variance.h <- tapply(data_str_sample$star, data_str_sample$city, var)
+cat("Stratified Variance of Ratings by City:\n")
+print(str_variance.h)
+
+# Standard error of ratings per city
+str_se.h <- sqrt((1 - n.h / N.h) * str_variance.h / n.h)
+cat("Stratified Standard Errors by City:\n")
+print(str_se.h)
+
+# Weighted mean for stratified estimate of the mean
+str_prop.mean <- sum(N.h / N * str_mean.h)
+cat("Stratified Estimate of the Mean Rating (Overall):", str_prop.mean, "\n")
+
+# Standard error for the stratified mean estimate
+str_prop.mean_se <- sqrt(sum((N.h / N)^2 * str_se.h^2))
+cat("Stratified Estimate of Standard Error (Overall):", str_prop.mean_se, "\n")
+
+```
+
+## Stratified for Proportion
+
+```{r}
+# Proportion:
+# Adding a binary indicator for ratings > 4.5 stars
+data <- data %>%
+  mutate(rating_above_4_5 = ifelse(star > 4.5, 1, 0))
+
+# Stratified Sampling Proportional Allocation
+N.h <- tapply(data$rating_above_4_5, data$city, length)
+city_allocation <- round((N.h / N) * n)
+
+n.h <- c(13, 41, 27, 55, 22, 80, 76, 22) # Adjust based on city_allocation
+cities <- names(N.h)
+
+set.seed(0)
+data_str_sample <- NULL
+for (i in 1:length(cities)) {
+  row.indices <- which(data$city == cities[i])
+  sample.indices <- sample(row.indices, n.h[i], replace = FALSE)
+  data_str_sample <- rbind(data_str_sample, data[sample.indices, ])
+}
+
+# Stratified Estimation for Proportion
+str_prop.h <- tapply(data_str_sample$rating_above_4_5, data_str_sample$city, mean)
+str_variance.h <- tapply(data_str_sample$rating_above_4_5, data_str_sample$city, var)
+str_se.h <- sqrt((1 - n.h / N.h) * str_variance.h / n.h)
+
+str_prop.p <- sum(N.h / N * str_prop.h)
+cat("Stratified Proportion:", str_prop.p, "\n")
+
+str_prop.p_se <- sqrt(sum((N.h / N)^2 * str_se.h^2))
+cat("Stratified Proportion SE:", str_prop.p_se, "\n")
+```
+
+## Stratified Sampling Analysis
+
+### Stratified Mean Analysis
+
+Using stratified sampling with proportional allocation based on cities, we estimated the mean restaurant rating to be 4.4495. The standard error of this estimate was 0.0150. This standard error is comparable to that obtained from the SRS method, indicating similar precision. The stratified mean estimate is slightly lower than the SRS estimate, which may reflect differences in ratings across cities accounted for by the stratification.
+
+### Stratified Proportion Analysis
+
+The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is larger than the standard error from the SRS method. This suggests that, in this case, stratified sampling provided a less precise estimate for the proportion compared to SRS.
+
+# Conclusion and Discussion
+
+In this study, we estimated the mean restaurant rating and the proportion of highly rated restaurants on DoorDash in Canada using both Simple Random Sampling (SRS) and stratified sampling methods. Surprisingly, stratified sampling performed worse than SRS, as evidenced by larger standard errors in the stratified estimates compared to the SRS estimates. Typically, stratified sampling is expected to provide more precise results because it accounts for variability within different groups (strata) and reduces overall variance.
+
+One possible reason for stratified sampling performing worse in our case is that the stratification based on cities did not effectively reduce variability. If the differences in restaurant ratings between cities are not significant, or if there is high variability within cities, stratification may not offer any advantage over simple random sampling. Additionally, unequal or small sample sizes within some strata could have led to higher variances and less precise estimates.
+
+These findings suggest that, in this context, SRS provided more reliable estimates for the mean rating and the proportion of highly rated restaurants. This outcome emphasizes the importance of carefully choosing stratification variables that effectively capture differences in the population to improve the precision of estimates.
+
+------------------------------------------------------------------------
+
+# Appendix
+
+### A
+
+```{r echo=FALSE}
+# 1. Distribution Plot (Histogram) for Ratings by City
+ggplot(data, aes(x = star, fill = city)) +
+  geom_histogram(binwidth = 0.1, color = "black", alpha = 0.7) +
+  facet_wrap(~ city) +
+  labs(title = "Histogram of Ratings by City",
+       x = "Rating",
+       y = "Count") +
+  theme_minimal()
+
+# 2. Boxplot for Ratings by City
+ggplot(data, aes(x = city, y = star, fill = city)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Ratings by City",
+       x = "City",
+       y = "Rating") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+```{r echo=FALSE}
+
+data <- data %>%
+  mutate(rating_above_4_5 = ifelse(star > 4.5, 1, 0))
+
+
+city_proportion <- data %>%
+  group_by(city) %>%
+  summarise(proportion_above_4_5 = mean(rating_above_4_5))
+
+ggplot(city_proportion, aes(x = city, y = proportion_above_4_5, fill = city)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Proportion of Ratings Above 4.5 by City",
+       x = "City",
+       y = "Proportion") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+
+
+### References
+
+1.  DoorDash dataset from [Kaggle](https://www.kaggle.com/code/satoshiss/analyze-food-delivery-in-canada-door-dash/input?select=doordash_Vancouver_2022-06-02.csv)
+2.  Google Maps city data: [gosnappy.io](https://gosnappy.io/blog/how-many-restaurants-in-vancouver/)
