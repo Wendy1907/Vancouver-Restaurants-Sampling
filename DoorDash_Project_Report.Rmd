@@ -9,6 +9,8 @@ output: pdf_document
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+set.seed(1)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 # Cover Page
@@ -49,7 +51,7 @@ This project aims to determine the quality of food from DoorDash restaurants acr
 -   **Stratification:** The population is stratified by cities based on third-party Google Maps data.
 -   **Source of Data:** Kaggle
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 # Data cleaning and data preparation
 # Ensure dataset is in current Working Directory using "getwd()"
 full_data <- read.csv("cleaned_full_data.csv", header = T)
@@ -87,7 +89,7 @@ In order to determine the appropriate sample size, we chose a 95% CI half-width 
 
 ### Sample Size Calculation for Binary/Continuous Case with FPC
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 N <- 2620 # Total population
 z <- 1.96 # z-score for 95% CI
 p <- 0.5 # Worst-case variance
@@ -103,7 +105,7 @@ sample_size
 
 Relying on third-party information based on Google Maps data, we will stratify the data into cities, and perform a proportional allocation based on the number of restaurants in each city.
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 # Stratified Sampling Proportional Allocation
 # Calculate n.h
 N.h <- tapply(data$star, data$city, length)
@@ -114,7 +116,7 @@ city_allocation
 
 # Method 1: Simple Random Sampling
 
-```{r pressure, echo=TRUE}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 # Population mean of star
 p_mean_star <- mean(data$star)
 cat("Population Mean:", p_mean_star, "\n")
@@ -122,7 +124,7 @@ cat("Population Mean:", p_mean_star, "\n")
 
 ## SRS for Mean
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 IDS <- data$id
 N <- length(data$id)
 n <- sample_size
@@ -155,7 +157,7 @@ cat("95% Confidence Interval:", srs_CI, "\n")
 
 ## SRS for Proportion
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 # Sample proportion of restaurants with ratings greater than 4.5
 srs_sample_p <- mean(data_srs_sample$star > 4.5)
 cat("Sample Proportion of Restaurants with Ratings > 4.5:", srs_sample_p, "\n")
@@ -191,7 +193,7 @@ For the proportion of restaurants with ratings greater than 4.5, the SRS method 
 
 ## Stratified for Mean
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 n.h <- city_allocation
 
 cities <- names(N.h)
@@ -239,7 +241,7 @@ cat("95% Confidence Interval:", str_prop_mean_CI, "\n")
 
 ## Stratified for Proportion
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 # Proportion:
 # Adding a binary indicator for ratings > 4.5 stars
 data <- data %>%
@@ -320,7 +322,7 @@ These limitations should be considered when interpreting the findings and could 
 
 **First few lines of the Cleaned Dataset (Population) used in the Project**
 
-```{r}
+```{r, echo = TRUE, eval = TRUE, include = TRUE}
 head(data)
 ```
 
