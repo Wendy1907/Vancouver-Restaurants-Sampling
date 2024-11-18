@@ -9,7 +9,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-
 ```{r cars}
 # Data cleaning and data preparation
 full_data <- read.csv("cleaned_full_data.csv", header = T)
@@ -83,8 +82,6 @@ ggplot(city_rating_proportion, aes(x = city, y = proportion, fill = rating_categ
 
 ```
 
-
-
 ```{r pressure, echo=TRUE}
 # Population mean of star
 p_mean_star <- mean(data$star)
@@ -92,6 +89,7 @@ p_mean_star
 ```
 
 ## SRS for mean
+
 ```{r}
 IDS <- data$id
 N <- length(data$id)
@@ -140,6 +138,7 @@ srs_CI_p
 ```
 
 ## Proportional Allocation for mean
+
 ```{r}
 # Stratified Sampling Proportional Allocation
 # Calculate n.h
@@ -179,6 +178,7 @@ str_prop.mean_se
 ```
 
 ## Proportional allocarion for p
+
 ```{r}
 # Proportion:
 # Adding a binary indicator for ratings > 4.5 stars
@@ -217,7 +217,6 @@ str_prop <- c(str_prop.mean, str_prop.p_se)
 rbind(srs, str_prop)
 ```
 
-
 ```{r}
 estimate_data <- data.frame(
   method = c("SRS", "Stratified"),
@@ -252,4 +251,3 @@ ggplot(estimate_data, aes(x = method, y = proportion_estimate)) +
 
 
 ```
-

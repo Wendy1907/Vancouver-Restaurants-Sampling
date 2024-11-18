@@ -39,6 +39,7 @@ srs_sample.sd
 
 # SRS Calculate 95% CI for population mean
 srs_sample.se <- sqrt((1-n/N)/n)*srs_sample.sd
+srs_sample.se
 srs_CI <- c(srs_sample.mean - 1.96*srs_sample.se, srs_sample.mean + 1.96*srs_sample.se)
 srs_CI
 
