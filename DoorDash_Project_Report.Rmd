@@ -9,8 +9,7 @@ output: pdf_document
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-set.seed(1)
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+set.seed(344)
 ```
 
 # Cover Page
@@ -51,7 +50,7 @@ This project aims to determine the quality of food from DoorDash restaurants acr
 -   **Stratification:** The population is stratified by cities based on third-party Google Maps data.
 -   **Source of Data:** Kaggle
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 # Data cleaning and data preparation
 # Ensure dataset is in current Working Directory using "getwd()"
 full_data <- read.csv("cleaned_full_data.csv", header = T)
@@ -83,13 +82,13 @@ For additional analysis of population, please see appendix A.
 
 First, we will use the binary form (ie. higher than 4.5, lower than 4.5) of our continuous dataset to estimate our sample size. This is because the binary form allows us to attain a conservative estimate (ie. assume maximum variance of 0.25). Intuitively, we know that binary data typically requires larger samples than continuous data to achieve the same precision as it loses information through discretization. Therefore, the sample size calculated from the binary dataset will be sufficient for the continuous case as well.
 
-In order to determine the appropriate sample size, we chose a 95% CI half-width length of 0.05, and assumed the worst-case variance for the binary data (0.25). We also assumed that the sampling distribution will approximate to a normal distribution. Given the guessed variance, intended % for the CI, and the half-width, we were able to calculate the minimum sample size required n=326
+In order to determine the appropriate sample size, we chose a 95% CI half-width length of 0.05, and assumed the worst-case variance for the binary data (0.25). We also assumed that the sampling distribution will approximate to a normal distribution. Given the guessed variance, intended % for the CI, and the half-width, we were able to calculate the minimum sample size required `n = 335`.
 
 ------------------------------------------------------------------------
 
 ### Sample Size Calculation for Binary/Continuous Case with FPC
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 N <- 2620 # Total population
 z <- 1.96 # z-score for 95% CI
 p <- 0.5 # Worst-case variance
@@ -105,7 +104,7 @@ sample_size
 
 Relying on third-party information based on Google Maps data, we will stratify the data into cities, and perform a proportional allocation based on the number of restaurants in each city.
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 # Stratified Sampling Proportional Allocation
 # Calculate n.h
 N.h <- tapply(data$star, data$city, length)
@@ -116,7 +115,7 @@ city_allocation
 
 # Method 1: Simple Random Sampling
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 # Population mean of star
 p_mean_star <- mean(data$star)
 cat("Population Mean:", p_mean_star, "\n")
@@ -124,7 +123,7 @@ cat("Population Mean:", p_mean_star, "\n")
 
 ## SRS for Mean
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 IDS <- data$id
 N <- length(data$id)
 n <- sample_size
@@ -157,7 +156,7 @@ cat("95% Confidence Interval:", srs_CI, "\n")
 
 ## SRS for Proportion
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 # Sample proportion of restaurants with ratings greater than 4.5
 srs_sample_p <- mean(data_srs_sample$star > 4.5)
 cat("Sample Proportion of Restaurants with Ratings > 4.5:", srs_sample_p, "\n")
@@ -181,11 +180,11 @@ cat("95% Confidence Interval for the Proportion:", srs_CI_p, "\n")
 
 ### SRS Mean Analysis
 
-Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.47, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0148. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
+Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.464, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0149. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
 
 ### SRS Proportion Analysis
 
-For the proportion of restaurants with ratings greater than 4.5, the SRS method yielded a sample proportion of 48.36%, and sample standard error is 0.0255. The 95% confidence interval for this proportion is between 43.36% and 53.36%, indicating that nearly half of the restaurants have ratings above 4.5. This estimate provides a reasonable understanding of the proportion of highly rated restaurants on DoorDash in Canada.
+For the proportion of restaurants with ratings greater than 4.5, the SRS method yielded a sample proportion of 45.07%, and sample standard error is 0.0254. The 95% confidence interval for this proportion is between 40.1% and 50.05%, indicating that nearly half of the restaurants have ratings above 4.5. This estimate provides a reasonable understanding of the proportion of highly rated restaurants on DoorDash in Canada.
 
 ------------------------------------------------------------------------
 
@@ -193,7 +192,7 @@ For the proportion of restaurants with ratings greater than 4.5, the SRS method 
 
 ## Stratified for Mean
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 n.h <- city_allocation
 
 cities <- names(N.h)
@@ -241,7 +240,7 @@ cat("95% Confidence Interval:", str_prop_mean_CI, "\n")
 
 ## Stratified for Proportion
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 # Proportion:
 # Adding a binary indicator for ratings > 4.5 stars
 data <- data %>%
@@ -286,7 +285,7 @@ Using stratified sampling with proportional allocation based on cities, we estim
 
 ### Stratified Proportion Analysis
 
-The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is smaller than the standard error from the SRS method at 0.0255. Based on this result, stratified sampling is a better method to estimate the proportions than SRS.
+The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is smaller than the standard error from the SRS method at 0.0254. Based on this result, stratified sampling is a better method to estimate the proportions than SRS.
 
 # Conclusion and Discussion
 
@@ -294,9 +293,9 @@ The stratified sampling method estimated the proportion of restaurants with rati
 
 This project utilized two sampling methods—Simple Random Sampling (SRS) and Stratified Sampling—to estimate two key parameters: the mean restaurant rating on DoorDash in Canada and the proportion of restaurants with ratings greater than 4.5
 
-The SRS method estimated the mean rating as 4.47 with a 95% confidence interval of [4.441, 4.499] and the proportion of restaurants with ratings above 4.5 as 48.36% with a confidence interval of [43.36%, 53.36%]. The estimated standard errors for the mean and proportion were 0.0148 and 0.0255, respectively.
+The SRS method estimated the mean rating as 4.464 with a 95% confidence interval of [4.435, 4.493] and the proportion of restaurants with ratings above 4.5 as 45.07% with a confidence interval of [40.1%, 50.05%]. The estimated standard errors for the mean and proportion were 0.0149 and 0.0254, respectively.
 
-The Stratified Sampling method, using cities as strata, provided a slightly lower estimate for the mean rating at 4.458, with a standard error of 0.0149 and 95% confidence interval of [4.430, 4.488]. The proportion of restaurants rated above 4.5 was estimated to be 44.94%, with a standard error of 0.0247. and 95% confidence interval of [40.09%, 49.78%]. The confidence intervals obtained through this method were narrower compared to SRS, demonstrating the improved precision from stratification.
+The Stratified Sampling method, using cities as strata, provided a slightly lower estimate for the mean rating at 4.459, with a standard error of 0.0149 and 95% confidence interval of [4.43, 4.488]. The proportion of restaurants rated above 4.5 was estimated to be 44.94%, with a standard error of 0.0247. and 95% confidence interval of [40.09%, 49.78%]. The confidence intervals obtained through this method were narrower compared to SRS, demonstrating the improved precision from stratification.
 
 Overall, both methods produced similar estimates for the mean and proportion, validating the robustness of the results. However, stratified sampling was marginally more efficient, particularly for estimating the proportion, as it accounted for differences across cities.
 
@@ -322,7 +321,7 @@ These limitations should be considered when interpreting the findings and could 
 
 **First few lines of the Cleaned Dataset (Population) used in the Project**
 
-```{r, echo = TRUE, eval = TRUE, include = TRUE}
+```{r}
 head(data)
 ```
 
