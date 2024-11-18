@@ -15,7 +15,7 @@ library(ggplot2)
 
 **Title:** Analysis of DoorDash Restaurant Ratings in Canada\
 **Contributors:**\
-Wendy Phung – 76185974 (Leader)\
+Wendy (Tran Anh Thu) Phung – 76185974 (Leader)\
 Junbo (David) Rao - 55832919\
 Jag Tang - 89478895\
 Bryan Seo - 13749536\
