@@ -318,6 +318,14 @@ These limitations should be considered when interpreting the findings and could 
 
 ### A
 
+**First few lines of the Cleaned Dataset (Population) used in the Project**
+
+```{r}
+head(data)
+```
+
+**Analysis of the Population**
+
 ```{r echo=FALSE}
 # 1. Distribution Plot (Histogram) for Ratings by City
 ggplot(data, aes(x = star, fill = city)) +
@@ -359,7 +367,7 @@ ggplot(city_proportion, aes(x = city, y = proportion_above_4_5, fill = city)) +
 
 ```
 
-### References
+# References
 
 1.  DoorDash dataset from [Kaggle](https://www.kaggle.com/code/satoshiss/analyze-food-delivery-in-canada-door-dash/input?select=doordash_Vancouver_2022-06-02.csv)
 2.  Google Maps city data: [gosnappy.io](https://gosnappy.io/blog/how-many-restaurants-in-vancouver/)
