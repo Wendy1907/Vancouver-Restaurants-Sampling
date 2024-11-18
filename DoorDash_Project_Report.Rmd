@@ -1,7 +1,7 @@
 ---
 title: "Analysis of DoorDash Restaurant Ratings in Canada"
 author: "Bryan Seo, Junbo Rao, Wendy Phung, Jag Tang"
-date: "November 2024"
+date: "17th November 2024"
 output: pdf_document
 ---
 
@@ -19,7 +19,7 @@ Wendy Phung – 76185974 (Leader)\
 Junbo (David) Rao - 55832919\
 Jag Tang - 89478895\
 Bryan Seo - 13749536\
-**Date:** November 2024
+**Date:** 17th November 2024
 
 ------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ city_allocation <- round((N.h/N)*sample_size)
 city_allocation
 ```
 
-# First Method: Simple Random Sampling
+# Method 1: Simple Random Sampling
 
 ```{r pressure, echo=TRUE}
 # Population mean of star
@@ -137,7 +137,8 @@ srs_sample.mean <- mean(data_srs_sample$star)
 cat("Sample Mean:", srs_sample.mean, "\n")
 
 # Sample Variance for Sample Mean
-srs_sample.variance <- sum((data_srs_sample$star - srs_sample.mean)^2) / (length(data_srs_sample$star) - 1)
+srs_sample.variance <- sum((data_srs_sample$star - srs_sample.mean)^2) / 
+  (length(data_srs_sample$star) - 1)
 cat("Sample Variance:", srs_sample.variance, "\n")
 
 # Sample SD for Sample Mean
@@ -178,7 +179,7 @@ cat("95% Confidence Interval for the Proportion:", srs_CI_p, "\n")
 
 ### SRS Mean Analysis
 
-Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.47, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0147. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
+Using SRS, we estimated the average restaurant rating on DoorDash in Canada. The sample mean rating was 4.47, which is close to the population mean of 4.479. Notably, the standard error of this approach for mean is 0.0148. This suggests that the SRS method provides a reliable estimate of the true average restaurant rating.
 
 ### SRS Proportion Analysis
 
@@ -229,6 +230,11 @@ cat("Stratified Estimate of the Mean Rating (Overall):", str_prop.mean, "\n")
 str_prop.mean_se <- sqrt(sum((N.h / N)^2 * str_se.h^2))
 cat("Stratified Estimate of Standard Error (Overall):", str_prop.mean_se, "\n")
 
+# Calculate 95% CI for population mean
+str_prop_mean_CI <- c(str_prop.mean - 1.96 * str_prop.mean_se, 
+                      str_prop.mean + 1.96 * str_prop.mean_se)
+cat("95% Confidence Interval:", str_prop_mean_CI, "\n")
+
 ```
 
 ## Stratified for Proportion
@@ -264,25 +270,47 @@ cat("Stratified Proportion:", str_prop.p, "\n")
 
 str_prop.p_se <- sqrt(sum((N.h / N)^2 * str_se.h^2))
 cat("Stratified Proportion SE:", str_prop.p_se, "\n")
+
+# Calculate 95% CI for population mean
+str_prop_p_CI <- c(str_prop.p - 1.96 * str_prop.p_se, str_prop.p + 1.96 * str_prop.p_se)
+cat("95% Confidence Interval:", str_prop_p_CI, "\n")
 ```
 
 ## Stratified Sampling Analysis
 
 ### Stratified Mean Analysis
 
-Using stratified sampling with proportional allocation based on cities, we estimated the mean restaurant rating to be 4.458. The standard error of this estimate was 0.0149. This standard error is comparable to that obtained from the SRS method, indicating similar precision. The stratified mean estimate is slightly lower than the SRS estimate, which may reflect differences in ratings across cities accounted for by the stratification.
+Using stratified sampling with proportional allocation based on cities, we estimated the mean restaurant rating to be 4.459. The standard error of this estimate was 0.0149. This standard error is comparable to that obtained from the SRS method, indicating similar precision. The stratified mean estimate is slightly lower than the SRS estimate, which may reflect differences in ratings across cities accounted for by the stratification.
 
 ### Stratified Proportion Analysis
 
-The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is smaller than the standard error from the SRS method. *This suggests that, in this case, stratified sampling provided a less precise estimate for the proportion compared to SRS.*
+The stratified sampling method estimated the proportion of restaurants with ratings greater than 4.5 to be 0.4494 (or 44.94%). The standard error for this estimate was 0.0247, which is smaller than the standard error from the SRS method at 0.0255. Based on this result, stratified sampling is a better method to estimate the proportions than SRS.
 
 # Conclusion and Discussion
 
-In this study, we estimated the mean restaurant rating and the proportion of highly rated restaurants on DoorDash in Canada using both Simple Random Sampling (SRS) and stratified sampling methods. Surprisingly, stratified sampling performed worse than SRS, as evidenced by larger standard errors in the stratified estimates compared to the SRS estimates. Typically, stratified sampling is expected to provide more precise results because it accounts for variability within different groups (strata) and reduces overall variance.
+**Conclusion:**
 
-One possible reason for stratified sampling performing worse in our case is that the stratification based on cities did not effectively reduce variability. If the differences in restaurant ratings between cities are not significant, or if there is high variability within cities, stratification may not offer any advantage over simple random sampling. Additionally, unequal or small sample sizes within some strata could have led to higher variances and less precise estimates.
+This project utilized two sampling methods—Simple Random Sampling (SRS) and Stratified Sampling—to estimate two key parameters: the mean restaurant rating on DoorDash in Canada and the proportion of restaurants with ratings greater than 4.5
 
-These findings suggest that, in this context, SRS provided more reliable estimates for the mean rating and the proportion of highly rated restaurants. This outcome emphasizes the importance of carefully choosing stratification variables that effectively capture differences in the population to improve the precision of estimates.
+The SRS method estimated the mean rating as 4.47 with a 95% confidence interval of [4.441, 4.499] and the proportion of restaurants with ratings above 4.5 as 48.36% with a confidence interval of [43.36%, 53.36%]. The estimated standard errors for the mean and proportion were 0.0148 and 0.0255, respectively.
+
+The Stratified Sampling method, using cities as strata, provided a slightly lower estimate for the mean rating at 4.458, with a standard error of 0.0149 and 95% confidence interval of [4.430, 4.488]. The proportion of restaurants rated above 4.5 was estimated to be 44.94%, with a standard error of 0.0247. and 95% confidence interval of [40.09%, 49.78%]. The confidence intervals obtained through this method were narrower compared to SRS, demonstrating the improved precision from stratification.
+
+Overall, both methods produced similar estimates for the mean and proportion, validating the robustness of the results. However, stratified sampling was marginally more efficient, particularly for estimating the proportion, as it accounted for differences across cities.
+
+**Discussion:**
+
+The results highlight the value of stratified sampling when the population exhibits heterogeneity, as it provided improved precision over SRS by leveraging the differences in restaurant ratings across cities.
+
+The mean ratings across Canadian restaurants on DoorDash indicate generally high satisfaction, with nearly half of the restaurants achieving a rating above 4.5. This suggests that users perceive DoorDash restaurants as offering high-quality service. However, it is also important to consider factors such as rating inflation, which may skew user perceptions.
+
+**Limitations:**
+
+1.  **Representation of the Population**: The dataset only includes DoorDash-listed restaurants, which may not fully represent all restaurants in Canada. This limitation could introduce bias, as restaurants available on other food delivery platforms or not listed on DoorDash might differ in quality and customer ratings.
+2.  **Rating Influences**: The study relies solely on customer ratings as a proxy for food quality. Ratings can be influenced by non-food-related factors such as delivery time, app usability, or customer service, potentially skewing the results.
+3.  **Data Assumptions**: The analysis assumes that ratings are an unbiased and normally distributed measure across the population. If the distribution of ratings is skewed, particularly in cities with a smaller number of restaurants, this could affect the accuracy of the estimates.
+
+These limitations should be considered when interpreting the findings and could inform improvements in future studies.
 
 ------------------------------------------------------------------------
 
